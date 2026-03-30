@@ -1,18 +1,19 @@
-# 🤖 WhatsApp AI Bot — Powered by Claude (Anthropic)
+# 🤖 Advanced WhatsApp AI Bot
 
-A WhatsApp bot that uses `whatsapp-web.js` to listen to incoming messages and
-replies using Claude AI. No ML training needed — just the Anthropic API.
+A powerful, feature-rich WhatsApp bot that uses `whatsapp-web.js` to listen to incoming messages and replies using a multi-provider AI system (Groq/OpenAI).
 
 ---
 
 ## ✨ Features
 
-- 📱 Connects to your real WhatsApp number via QR scan
-- 🧠 Claude AI answers every incoming message intelligently
-- 💬 Remembers conversation context per user (configurable history)
-- ⏱️ Auto-expires inactive sessions
-- 🎭 Customizable bot name, role, and language
-- 🔁 Handles multiple users simultaneously
+- 📱 **Real WhatsApp Connection:** Connects to your real WhatsApp number via QR scan.
+- 🧠 **Multi-Provider AI:** Uses Groq (Llama 3.3, Gemma) for blazing fast responses or OpenAI as fallback.
+- 🎨 **Image Generation:** Generates images directly in chat (supports Gemini/Placeholder).
+- 📚 **Self-Learning RAG:** Automatically learns from conversations and builds a local Knowledge Base.
+- 📊 **File Analysis:** Upload CSV or JSON files for instant data analysis and chart generation.
+- 🔍 **Live Web Search:** Integrated with SerpApi to search the web for real-time answers.
+- 💻 **Local Dashboard:** Monitor bot statistics, active sessions, and live logs locally.
+- 💬 **Conversation Context:** Remembers history per user with auto-expiring sessions.
 
 ---
 
@@ -20,15 +21,18 @@ replies using Claude AI. No ML training needed — just the Anthropic API.
 
 ### 1. Prerequisites
 
-- Node.js **v18+** (check: `node -v`)
+- Node.js **v18+**
 - A WhatsApp account (personal or business)
-- An Anthropic API key → https://console.anthropic.com/
+- API Keys:
+  - **Groq API Key** (Required for primary AI) -> https://console.groq.com/
+  - **OpenAI API Key** (Optional fallback) -> https://platform.openai.com/
+  - **SerpApi Key** (Optional for web search) -> https://serpapi.com/
 
 ### 2. Install
 
 ```bash
-git clone <your-repo-url>
-cd whatsapp-ai-bot
+git clone https://github.com/satyaprakash412770/whatsapp-bot.git
+cd whatsapp-bot
 npm install
 ```
 
@@ -38,7 +42,7 @@ npm install
 cp .env.example .env
 ```
 
-Edit `.env` and fill in your `ANTHROPIC_API_KEY`. Customize `BOT_NAME`, `BOT_ROLE`, etc.
+Edit `.env` and fill in your keys (e.g., `GROQ_API_KEY`, `SERPAPI_KEY`, etc.). Customize `BOT_NAME` and `BOT_ROLE` to adjust the bot's persona.
 
 ### 4. Run
 
@@ -49,20 +53,23 @@ npm start
 A **QR code** will appear in the terminal. Open WhatsApp on your phone:
 `Settings → Linked Devices → Link a Device` → scan the QR code.
 
-Once connected, the bot is live! Anyone who messages your number will get an AI-powered reply.
+The local dashboard will also be available at `http://localhost:3001`.
 
 ---
 
-## 📁 Project Structure
+## 📁 Core Structure
 
 ```
-whatsapp-ai-bot/
+whatsapp-bot/
 ├── index.js            # Entry point — WhatsApp client + message handler
-├── agentPrompt.js      # System prompt builder (edit to change AI persona)
-├── conversationStore.js# Per-user conversation memory with session timeout
-├── config.js           # Centralized config loaded from .env
-├── package.json
-└── .env.example        # Copy to .env and fill in your keys
+├── aiProvider.js       # Multi-provider AI router (Groq / OpenAI)
+├── ragStore.js         # Local Knowledge Base & Semantic Search memory
+├── imageGenerator.js   # Image generation triggers
+├── dataAnalyzer.js     # Parses incoming CSV/JSON files
+├── dashboard/          # Local server for live bot statistics
+├── conversationStore.js# Per-user conversation memory
+├── config.js           # Centralized configuration
+└── .env                # Environment variables
 ```
 
 ---
@@ -71,54 +78,22 @@ whatsapp-ai-bot/
 
 | Variable | Default | Description |
 |---|---|---|
-| `ANTHROPIC_API_KEY` | — | **Required.** Your API key |
-| `AI_MODEL` | `claude-sonnet-4-5-20251022` | Claude model to use |
+| `AI_PROVIDER` | `groq` | Primary AI provider (`groq` or `openai`) |
+| `GROQ_API_KEY` | — | **Required.** Your Groq API key |
+| `OPENAI_API_KEY` | — | Fallback OpenAI API key |
+| `SERPAPI_KEY` | — | SerpApi Key for live web search |
+| `AI_MODEL` | `llama-3.1-8b-instant` | Groq model to use |
 | `MAX_TOKENS` | `1024` | Max tokens per AI reply |
 | `MAX_HISTORY` | `10` | Messages remembered per user |
-| `SESSION_TIMEOUT_MINUTES` | `30` | Inactivity before session reset |
-| `BOT_NAME` | `Aria` | Bot's display name |
-| `BOT_ROLE` | `a helpful AI assistant` | Bot's role (used in system prompt) |
-| `BOT_LANGUAGE` | `English` | Default reply language |
-
----
-
-## 🎨 Customizing the AI Persona
-
-Edit `agentPrompt.js` to change:
-- **Personality** — make it formal, funny, or domain-specific
-- **Capabilities** — restrict to only answering about your product/service
-- **Rules** — add brand guidelines, off-topic rejections, etc.
-
-Example: turn it into a customer support bot for your store:
-
-```js
-return `You are ${config.BOT_NAME}, the support assistant for AcmeCorp.
-Only answer questions about our products and services.
-For billing issues, direct users to support@acmecorp.com.
-...`;
-```
+| `DASHBOARD_PORT`| `3001` | Port for the local dashboard |
+| `BOT_NAME` | `satya` | Bot's display name |
+| `BOT_ROLE` | `a helpful AI assistant` | Bot's role |
 
 ---
 
 ## 🛡️ Important Notes
 
 - `whatsapp-web.js` uses your real WhatsApp account. Use a **dedicated number** for production.
-- The `.wwebjs_auth/` folder stores your session — keep it safe, add it to `.gitignore`.
-- WhatsApp's ToS restricts automated messaging. For production/business use, consider the **WhatsApp Business API** (via Meta) instead.
-- Group messages are ignored by default. To enable, remove the `if (msg.isGroupMsg) return;` check in `index.js`.
-
----
-
-## 🔧 Troubleshooting
-
-**QR code not showing?**
-→ Make sure `puppeteer` installed correctly. On Linux you may need:
-```bash
-sudo apt-get install -y libgbm-dev libxshmfence-dev
-```
-
-**Auth keeps expiring?**
-→ The `.wwebjs_auth/` folder persists your session. Don't delete it between restarts.
-
-**AI not replying?**
-→ Check your `ANTHROPIC_API_KEY` in `.env` is correct and has credits.
+- The `.wwebjs_auth/` folder stores your session — keep it safe. If the bot stops answering, delete this folder and re-scan the QR code.
+- By default, the bot **ignores group messages**.
+- Self-messages (texting the bot from its own number) won't trigger the `.on("message")` event. Test from a different number.
