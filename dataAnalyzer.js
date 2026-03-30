@@ -1,6 +1,6 @@
 "use strict";
 
-const aq = require("arquero");
+const aq = await import("arquero");
 const { ChartJSNodeCanvas } = require("chartjs-node-canvas");
 const { parse: csvParse } = require("csv-parse/sync");
 
