@@ -70,11 +70,11 @@ async function webSearch(query) {
 const whatsapp = new Client({
   authStrategy: new LocalAuth({ dataPath: "./.wwebjs_auth" }),
   puppeteer: {
+    executablePath: "/usr/bin/chromium", // 👈 ADD THIS
     headless: true,
     args: ["--no-sandbox", "--disable-setuid-sandbox"]
   }
 });
-
 // ─── WhatsApp Events ──────────────────────────────────────────────────────────
 whatsapp.on("qr", (qr) => {
   console.log("\n📱 Scan this QR code with WhatsApp:\n");
