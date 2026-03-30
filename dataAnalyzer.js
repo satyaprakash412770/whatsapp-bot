@@ -1,6 +1,5 @@
 "use strict";
 
-const aq = require("arquero");
 const { ChartJSNodeCanvas } = require("chartjs-node-canvas");
 const { parse: csvParse } = require("csv-parse/sync");
 
@@ -13,13 +12,22 @@ const chartRenderer = new ChartJSNodeCanvas({
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
+let aq;
+async function getAq() {
+  if (!aq) {
+    aq = await import("arquero");
+  }
+  return aq;
+}
+
 /**
  * Parse raw buffer into an arquero table.
  * @param {Buffer} buffer
  * @param {"text/csv"|"application/json"} mimetype
- * @returns {aq.ColumnTable}
+ * @returns {Promise<any>}
  */
-function parseData(buffer, mimetype) {
+async function parseData(buffer, mimetype) {
+  const aq = await getAq();
   const text = buffer.toString("utf8");
   if (mimetype === "text/csv" || mimetype === "application/octet-stream") {
     const rows = csvParse(text, { columns: true, skip_empty_lines: true, trim: true });
@@ -159,17 +167,17 @@ async function renderChart(chartType, labels, data, xLabel, yLabel) {
         chartType === "pie"
           ? {}
           : {
-              x: {
-                ticks: { color: "#94a3b8", maxRotation: 45 },
-                grid: { color: "#ffffff15" },
-                title: { display: !!xLabel, text: xLabel, color: "#94a3b8" },
-              },
-              y: {
-                ticks: { color: "#94a3b8" },
-                grid: { color: "#ffffff15" },
-                title: { display: !!yLabel, text: yLabel, color: "#94a3b8" },
-              },
+            x: {
+              ticks: { color: "#94a3b8", maxRotation: 45 },
+              grid: { color: "#ffffff15" },
+              title: { display: !!xLabel, text: xLabel, color: "#94a3b8" },
             },
+            y: {
+              ticks: { color: "#94a3b8" },
+              grid: { color: "#ffffff15" },
+              title: { display: !!yLabel, text: yLabel, color: "#94a3b8" },
+            },
+          },
     },
   };
 
@@ -185,7 +193,7 @@ async function renderChart(chartType, labels, data, xLabel, yLabel) {
 async function handleFile(buffer, mimetype, userText = "", userId = "") {
   let table;
   try {
-    table = parseData(buffer, mimetype);
+    table = await parseData(buffer, mimetype);
   } catch (e) {
     return { text: `❌ I couldn't read that file: ${e.message}`, imageBuffer: null };
   }
