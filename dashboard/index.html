@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>WhatsApp Bot Dashboard</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;900&display=swap" rel="stylesheet"/>
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    :root{
+      --bg:#0d0f1a;--surface:#141728;--surface2:#1c2038;
+      --border:rgba(255,255,255,0.07);
+      --p:#6c63ff;--g:#43e97b;--r:#fa709a;--y:#fee140;--b:#74b9ff;--o:#fd9644;
+      --text:#e2e8f0;--muted:#64748b;--glow:rgba(108,99,255,0.35)
+    }
+    body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;flex-direction:column}
+
+    /* Header */
+    header{display:flex;align-items:center;gap:14px;padding:18px 32px;border-bottom:1px solid var(--border);background:var(--surface)}
+    .logo{width:40px;height:40px;background:var(--p);border-radius:12px;display:grid;place-items:center;font-size:20px;box-shadow:0 0 18px var(--glow)}
+    header h1{font-size:1.2rem;font-weight:700;letter-spacing:-.02em}
+    .provider-badge{margin-left:auto;margin-right:16px;font-size:.7rem;background:rgba(108,99,255,.15);color:var(--p);border:1px solid rgba(108,99,255,.3);border-radius:20px;padding:4px 12px;font-weight:600}
+    .live{display:flex;align-items:center;gap:6px;font-size:.72rem;color:var(--muted)}
+    .dot{width:8px;height:8px;background:var(--g);border-radius:50%;animation:pulse 2s infinite}
+    @keyframes pulse{0%,100%{opacity:1;box-shadow:0 0 0 0 rgba(67,233,123,.7)}50%{opacity:.8;box-shadow:0 0 0 6px rgba(67,233,123,0)}}
+
+    /* Main */
+    main{flex:1;padding:28px 32px;display:flex;flex-direction:column;gap:24px}
+
+    /* Cards */
+    .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:16px}
+    .card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:20px;position:relative;overflow:hidden;transition:transform .2s,box-shadow .2s}
+    .card:hover{transform:translateY(-3px);box-shadow:0 12px 40px rgba(0,0,0,.4)}
+    .card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;border-radius:16px 16px 0 0}
+    .card:nth-child(1)::before{background:var(--p)}
+    .card:nth-child(2)::before{background:var(--g)}
+    .card:nth-child(3)::before{background:var(--r)}
+    .card:nth-child(4)::before{background:var(--y)}
+    .card:nth-child(5)::before{background:var(--b)}
+    .card:nth-child(6)::before{background:var(--o)}
+    .card:nth-child(7)::before{background:#a29bfe}
+    .card .icon{font-size:1.8rem;margin-bottom:8px;display:block}
+    .card .label{font-size:.68rem;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:4px}
+    .card .value{font-size:2rem;font-weight:900;letter-spacing:-.04em;line-height:1}
+    .card .sub{font-size:.68rem;color:var(--muted);margin-top:4px}
+
+    /* Two-col layout */
+    .bottom{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+    @media(max-width:800px){.bottom{grid-template-columns:1fr}}
+
+    /* Panels */
+    .panel{background:var(--surface);border:1px solid var(--border);border-radius:16px;overflow:hidden}
+    .panel-header{display:flex;align-items:center;justify-content:space-between;padding:14px 20px;border-bottom:1px solid var(--border)}
+    .panel-header h2{font-size:.9rem;font-weight:600}
+    .badge{font-size:.7rem;color:var(--muted);background:var(--surface2);border-radius:20px;padding:3px 10px}
+
+    /* Log table */
+    table{width:100%;border-collapse:collapse;font-size:.8rem}
+    th{padding:9px 14px;text-align:left;font-size:.65rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);background:var(--surface2);font-weight:600}
+    td{padding:10px 14px;border-bottom:1px solid var(--border);color:var(--text);vertical-align:middle}
+    tr:last-child td{border-bottom:none}
+    tr:hover td{background:rgba(255,255,255,.02)}
+    .type-badge{display:inline-block;padding:2px 8px;border-radius:20px;font-size:.63rem;font-weight:700;text-transform:uppercase}
+    .type-text  {background:rgba(108,99,255,.15);color:var(--p)}
+    .type-search{background:rgba(250,112,154,.15);color:var(--r)}
+    .type-file  {background:rgba(254,225,64,.15); color:var(--y)}
+    .type-reply {background:rgba(67,233,123,.15); color:var(--g)}
+    .type-image {background:rgba(253,150,68,.15); color:var(--o)}
+    .type-rag   {background:rgba(162,155,254,.15);color:#a29bfe}
+    .muted{color:var(--muted);font-size:.75rem}
+    .empty{text-align:center;color:var(--muted);padding:32px;font-style:italic}
+
+    /* KB list */
+    .kb-list{padding:12px 20px;display:flex;flex-direction:column;gap:8px;max-height:260px;overflow-y:auto}
+    .kb-item{background:var(--surface2);border-radius:10px;padding:10px 14px;font-size:.78rem}
+    .kb-item .q{color:var(--text);margin-bottom:2px;font-weight:500}
+    .kb-item .uses{color:var(--muted);font-size:.68rem}
+
+    footer{padding:12px 32px;font-size:.68rem;color:var(--muted);border-top:1px solid var(--border);display:flex;gap:8px}
+  </style>
+</head>
+<body>
+<header>
+  <div class="logo">🤖</div>
+  <h1>WhatsApp Bot Dashboard</h1>
+  <span class="provider-badge" id="provider">Loading…</span>
+  <div class="live"><div class="dot"></div><span id="last-update">Connecting…</span></div>
+</header>
+
+<main>
+  <div class="cards">
+    <div class="card"><span class="icon">💬</span><div class="label">Total Messages</div><div class="value" id="total-messages">—</div></div>
+    <div class="card"><span class="icon">🟢</span><div class="label">Active Sessions</div><div class="value" id="active-sessions">—</div></div>
+    <div class="card"><span class="icon">🔍</span><div class="label">Web Searches</div><div class="value" id="total-searches">—</div></div>
+    <div class="card"><span class="icon">📂</span><div class="label">Files Analysed</div><div class="value" id="total-files">—</div></div>
+    <div class="card"><span class="icon">🎨</span><div class="label">Images Generated</div><div class="value" id="total-images">—</div></div>
+    <div class="card"><span class="icon">📚</span><div class="label">Knowledge Entries</div><div class="value" id="kb-count">—</div></div>
+    <div class="card"><span class="icon">⏱️</span><div class="label">Uptime</div><div class="value" id="uptime" style="font-size:1.4rem">—</div></div>
+  </div>
+
+  <div class="bottom">
+    <!-- Activity Log -->
+    <div class="panel">
+      <div class="panel-header"><h2>📋 Live Activity Log</h2><span class="badge" id="refresh-badge">5s refresh</span></div>
+      <table>
+        <thead><tr><th>Time</th><th>Phone</th><th>Type</th><th>Message</th></tr></thead>
+        <tbody id="log-body"><tr><td colspan="4" class="empty">Waiting for messages…</td></tr></tbody>
+      </table>
+    </div>
+
+    <!-- Knowledge Base -->
+    <div class="panel">
+      <div class="panel-header"><h2>🧠 Top Knowledge Entries</h2><span class="badge" id="kb-badge">0 entries</span></div>
+      <div class="kb-list" id="kb-list"><div class="empty">No entries yet — start chatting!</div></div>
+    </div>
+  </div>
+</main>
+
+<footer><span>🤖 Aria Bot</span>&nbsp;·&nbsp;<span id="footer-info">Loading…</span></footer>
+
+<script>
+function fmt(secs){const h=Math.floor(secs/3600),m=Math.floor((secs%3600)/60),s=secs%60;return h>0?`${h}h ${m}m`:m>0?`${m}m ${s}s`:`${s}s`}
+function typeClass(t){const m={search:'type-search',file:'type-file',reply:'type-reply',image:'type-image',rag:'type-rag'};return m[t]||'type-text'}
+function fmtTime(iso){return new Date(iso).toLocaleTimeString('en-IN',{hour12:false})}
+
+async function refresh(){
+  try{
+    const d=await(await fetch('/api/stats')).json();
+    document.getElementById('total-messages').textContent=d.totalMessages;
+    document.getElementById('active-sessions').textContent=d.activeSessions;
+    document.getElementById('total-searches').textContent=d.totalSearches;
+    document.getElementById('total-files').textContent=d.totalFiles;
+    document.getElementById('total-images').textContent=d.totalImages;
+    document.getElementById('kb-count').textContent=d.knowledge?.totalEntries||0;
+    const up=fmt(d.uptimeSeconds);
+    document.getElementById('uptime').textContent=up;
+    document.getElementById('provider').textContent=d.provider||'Groq';
+    document.getElementById('footer-info').textContent=`Uptime: ${up}`;
+    document.getElementById('last-update').textContent=`Live · ${new Date().toLocaleTimeString('en-IN',{hour12:false})}`;
+
+    // Log
+    const tbody=document.getElementById('log-body');
+    tbody.innerHTML=(!d.log||d.log.length===0)
+      ?'<tr><td colspan="4" class="empty">No activity yet…</td></tr>'
+      :d.log.map(e=>`<tr><td class="muted">${fmtTime(e.ts)}</td><td class="muted">${e.phone}</td><td><span class="type-badge ${typeClass(e.type)}">${e.type}</span></td><td>${e.text||''}</td></tr>`).join('');
+
+    // KB
+    const kbList=document.getElementById('kb-list');
+    const entries=d.knowledge?.topEntries||[];
+    document.getElementById('kb-badge').textContent=`${d.knowledge?.totalEntries||0} entries`;
+    kbList.innerHTML=entries.length===0
+      ?'<div class="empty">No entries yet — start chatting!</div>'
+      :entries.map(e=>`<div class="kb-item"><div class="q">${e.question}</div><div class="uses">Used ${e.useCount}× by the bot</div></div>`).join('');
+  }catch(e){
+    document.getElementById('last-update').textContent='Connection error';
+  }
+}
+refresh();setInterval(refresh,5000);
+</script>
+</body>
+</html>
