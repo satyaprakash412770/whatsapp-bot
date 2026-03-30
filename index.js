@@ -67,27 +67,12 @@ async function webSearch(query) {
 }
 
 // ─── WhatsApp Client ──────────────────────────────────────────────────────────
-const EDGE_PATH =
-  process.env.BROWSER_PATH ||
-  "C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe";
-
 const whatsapp = new Client({
   authStrategy: new LocalAuth({ dataPath: "./.wwebjs_auth" }),
   puppeteer: {
     headless: true,
-    executablePath: EDGE_PATH,
-    args: [
-      "--no-sandbox",
-      "--disable-setuid-sandbox",
-      "--disable-dev-shm-usage",
-      "--disable-accelerated-2d-canvas",
-      "--no-first-run",
-      "--disable-gpu",
-      "--disable-features=site-per-process",
-      "--disable-background-networking",
-      "--disable-extensions",
-    ],
-  },
+    args: ["--no-sandbox", "--disable-setuid-sandbox"]
+  }
 });
 
 // ─── WhatsApp Events ──────────────────────────────────────────────────────────
