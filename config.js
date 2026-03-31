@@ -19,7 +19,7 @@ module.exports = {
   SERPAPI_KEY: process.env.SERPAPI_KEY || "",
 
   // ── Dashboard ──────────────────────────────────────────────────────────────
-  DASHBOARD_PORT: parseInt(process.env.DASHBOARD_PORT) || 3001,
+  DASHBOARD_PORT: parseInt(process.env.PORT) || parseInt(process.env.DASHBOARD_PORT) || 3001,
 
   // Model — llama-3.1-8b-instant has a higher rate limit on the free tier
   AI_MODEL: process.env.AI_MODEL || "llama-3.1-8b-instant",
