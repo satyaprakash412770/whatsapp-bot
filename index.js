@@ -3,6 +3,7 @@
 const { Client, LocalAuth, MessageMedia } = require("whatsapp-web.js");
 const qrcode = require("qrcode-terminal");
 const { getJson } = require("serpapi");
+const puppeteer = require("puppeteer");
 const config = require("./config");
 const { buildSystemPrompt } = require("./agentPrompt");
 const conversationStore = require("./conversationStore");
@@ -70,7 +71,7 @@ async function webSearch(query) {
 const whatsapp = new Client({
   authStrategy: new LocalAuth({ dataPath: "./.wwebjs_auth" }),
   puppeteer: {
-    executablePath: process.env.BROWSER_PATH || (process.platform === "win32" ? "C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe" : "/usr/bin/chromium"),
+    executablePath: process.env.BROWSER_PATH || (process.platform === "win32" ? "C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe" : puppeteer.executablePath()),
     headless: true,
     args: [
       "--no-sandbox",

@@ -5,3 +5,4 @@ node_modules/
 files.zip
 *.log
 knowledge/
+.cache/
