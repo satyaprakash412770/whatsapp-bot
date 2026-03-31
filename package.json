@@ -4,6 +4,7 @@
   "description": "WhatsApp bot powered by Claude AI (Anthropic) via whatsapp-web.js",
   "main": "index.js",
   "scripts": {
+    "build": "npx puppeteer browsers install chrome",
     "start": "node index.js",
     "dev": "nodemon index.js"
   },
