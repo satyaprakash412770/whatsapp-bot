@@ -70,21 +70,30 @@ async function webSearch(query) {
 const whatsapp = new Client({
   authStrategy: new LocalAuth({ dataPath: "./.wwebjs_auth" }),
   puppeteer: {
-    executablePath: "/usr/bin/chromium", // 👈 ADD THIS
+    executablePath: process.env.BROWSER_PATH || (process.platform === "win32" ? "C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe" : "/usr/bin/chromium"),
     headless: true,
-    args: ["--no-sandbox", "--disable-setuid-sandbox"]
+    args: [
+      "--no-sandbox",
+      "--disable-setuid-sandbox",
+      "--disable-dev-shm-usage",
+      "--disable-accelerated-2d-canvas",
+      "--no-first-run",
+      "--no-zygote",
+      "--disable-gpu"
+    ]
   }
 });
 // ─── WhatsApp Events ──────────────────────────────────────────────────────────
 whatsapp.on("qr", (qr) => {
-  console.log("\n📱 Scan this QR code with WhatsApp:\n");
-  qrcode.generate(qr, { small: true });
+  console.log("\n📱 QR Code generated. Please check the Dashboard to scan and login.\n");
+  botEvents.emit("qr", qr);
 });
 
 whatsapp.on("ready", () => {
   console.log("✅ WhatsApp bot is live and ready!");
   console.log(`🤖 AI Provider: ${getProviderName()}`);
   console.log(`💬 Max conversation history: ${config.MAX_HISTORY} messages\n`);
+  botEvents.emit("ready");
 });
 
 whatsapp.on("auth_failure", (msg) => {
@@ -93,6 +102,7 @@ whatsapp.on("auth_failure", (msg) => {
 
 whatsapp.on("disconnected", async (reason) => {
   console.warn("⚠️  Bot disconnected:", reason);
+  botEvents.emit("disconnected");
   if (reason === "LOGOUT") {
     console.log("🔑 Session logged out. Destroying client and exiting...");
     console.log("   ➜  Delete the .wwebjs_auth folder and run npm start again to re-scan QR.");

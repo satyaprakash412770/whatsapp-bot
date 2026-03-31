@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>WhatsApp Bot Dashboard</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;900&display=swap" rel="stylesheet"/>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
   <style>
     *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
     :root{
@@ -88,6 +89,12 @@
 </header>
 
 <main>
+  <div id="connection-banner" style="display: none; background: var(--surface2); border: 1px solid var(--p); border-radius: 16px; padding: 24px; margin-bottom: 24px; text-align: center; box-shadow: 0 0 20px var(--glow);">
+    <h2 id="connection-title" style="margin-bottom: 16px; color: var(--text);">WhatsApp Authentication Required</h2>
+    <div id="qr-container" style="display: inline-block; background: white; padding: 16px; border-radius: 12px; margin-bottom: 8px;"></div>
+    <p id="connection-desc" style="color: var(--muted); font-size: 0.9rem;">Scan the QR code with your WhatsApp app to login.</p>
+  </div>
+
   <div class="cards">
     <div class="card"><span class="icon">💬</span><div class="label">Total Messages</div><div class="value" id="total-messages">—</div></div>
     <div class="card"><span class="icon">🟢</span><div class="label">Active Sessions</div><div class="value" id="active-sessions">—</div></div>
@@ -137,6 +144,49 @@ async function refresh(){
     document.getElementById('provider').textContent=d.provider||'Groq';
     document.getElementById('footer-info').textContent=`Uptime: ${up}`;
     document.getElementById('last-update').textContent=`Live · ${new Date().toLocaleTimeString('en-IN',{hour12:false})}`;
+
+    const banner = document.getElementById('connection-banner');
+    const qrContainer = document.getElementById('qr-container');
+    const title = document.getElementById('connection-title');
+    const desc = document.getElementById('connection-desc');
+
+    if (d.status === 'qr' && d.qrCode) {
+      banner.style.display = 'block';
+      banner.style.borderColor = 'var(--p)';
+      title.textContent = 'WhatsApp Authentication Required';
+      desc.textContent = 'Scan the QR code with your WhatsApp app to login.';
+      if (window._currentQrText !== d.qrCode) {
+        window._currentQrText = d.qrCode;
+        qrContainer.innerHTML = '';
+        qrContainer.style.display = 'inline-block';
+        new QRCode(qrContainer, {
+          text: d.qrCode,
+          width: 250,
+          height: 250,
+          colorDark: "#000000",
+          colorLight: "#ffffff",
+          correctLevel: QRCode.CorrectLevel.M
+        });
+      }
+    } else if (d.status === 'disconnected') {
+      banner.style.display = 'block';
+      banner.style.borderColor = 'var(--r)';
+      title.textContent = 'WhatsApp Disconnected';
+      desc.textContent = 'The bot has disconnected. Check logs or wait for reconnection.';
+      qrContainer.style.display = 'none';
+      window._currentQrText = null;
+    } else if (d.status === 'initializing') {
+      banner.style.display = 'block';
+      banner.style.borderColor = 'var(--o)';
+      title.textContent = 'Initializing...';
+      desc.textContent = 'Starting WhatsApp client...';
+      qrContainer.style.display = 'none';
+      window._currentQrText = null;
+    } else {
+      banner.style.display = 'none';
+      qrContainer.innerHTML = '';
+      window._currentQrText = null;
+    }
 
     // Log
     const tbody=document.getElementById('log-body');

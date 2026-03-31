@@ -16,9 +16,26 @@ const stats = {
   startedAt: Date.now(),
   activeSessions: {},
   log: [],
+  qrCode: null,
+  status: "initializing", // initializing, qr, connected, disconnected
 };
 
 const SESSION_TIMEOUT_MS = 30 * 60 * 1000;
+
+botEvents.on("qr", (qr) => {
+  stats.status = "qr";
+  stats.qrCode = qr;
+});
+
+botEvents.on("ready", () => {
+  stats.status = "connected";
+  stats.qrCode = null;
+});
+
+botEvents.on("disconnected", () => {
+  stats.status = "disconnected";
+  stats.qrCode = null;
+});
 
 botEvents.on("message", ({ phone, text, type }) => {
   stats.totalMessages += 1;
@@ -55,6 +72,8 @@ function startDashboard(port = 3001) {
       activeSessions: getActiveSessions(),
       uptimeSeconds: Math.floor((Date.now() - stats.startedAt) / 1000),
       provider: getProviderName(),
+      status: stats.status,
+      qrCode: stats.qrCode,
       knowledge: {
         totalEntries: ragStats.totalEntries,
         topEntries: ragStats.topEntries,
